@@ -1,4 +1,4 @@
-import re
+import os, re
 
 from django.core.files.base import File, ContentFile
 from django.core.files.storage import Storage, default_storage
@@ -210,3 +210,16 @@ class UrlStorage(Storage):
 
     def delete(self, name):
         pass
+
+def delete_all_thumbnails():
+    storage = default.storage
+    path = os.path.join(storage.location, settings.THUMBNAIL_PREFIX)
+
+    def walk(path):
+        dirs, files = storage.listdir(path)
+        for f in files:
+            storage.delete(os.path.join(path, f))
+        for directory in dirs:
+            walk(os.path.join(path, directory))
+            storage.delete(os.path.join(path, directory))
+    walk(path)
